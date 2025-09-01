@@ -1,0 +1,55 @@
+!pip install nltk
+import pandas as pd
+import nltk
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+nltk.download('movie_reviews')
+from nltk.corpus import movie_reviews
+
+reviews, sentiments = [], []
+for fileid in movie_reviews.fileids():
+    review_text = " ".join(movie_reviews.words(fileid))
+    reviews.append(review_text)
+    sentiments.append(movie_reviews.categories(fileid)[0])  # 'pos' or 'neg'
+
+df = pd.DataFrame({"review": reviews, "sentiment": sentiments})
+df['sentiment'] = df['sentiment'].map({'pos': 'positive', 'neg': 'negative'})
+
+print("Dataset Shape:", df.shape)
+
+X = df['review']
+y = df['sentiment']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
+X_train_tfidf = vectorizer.fit_transform(X_train)
+X_test_tfidf = vectorizer.transform(X_test)
+
+log_reg = LogisticRegression(max_iter=200)
+log_reg.fit(X_train_tfidf, y_train)
+y_pred_lr = log_reg.predict(X_test_tfidf)
+lr_acc = accuracy_score(y_test, y_pred_lr) * 100
+
+svm_model = SVC(kernel='linear')
+svm_model.fit(X_train_tfidf, y_train)
+y_pred_svm = svm_model.predict(X_test_tfidf)
+svm_acc = accuracy_score(y_test, y_pred_svm) * 100
+
+print("\n📊 Final Model Accuracies:")
+print(f"✅ Logistic Regression Accuracy: {lr_acc:.2f}%")
+print(f"✅ Support Vector Machine Accuracy: {svm_acc:.2f}%")
+
+sample_reviews = [
+    "I really loved the movie, the story was fantastic and emotional!",
+    "Worst movie ever, boring and poorly directed."
+]
+sample_vec = vectorizer.transform(sample_reviews)
+predictions = log_reg.predict(sample_vec)
+
+print("\n🔍 Sample Predictions (Logistic Regression):")
+for review, pred in zip(sample_reviews, predictions):
+    print(f"Review: {review} → Sentiment: {pred}")

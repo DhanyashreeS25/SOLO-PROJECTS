@@ -1,0 +1,593 @@
+FRONTEND CODE 
+
+HTML5
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMSCE InfoBot - College Assistant</title>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🏛️ BMSCE InfoBot</h1>
+            <p>BMS College of Engineering - Your Complete Information Assistant</p>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quickQuery('admissions')">🎯 Admissions</button>
+            <!-- More buttons... -->
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                🙏 <strong>Namaste!</strong> Welcome to BMS College of Engineering...
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" class="message-input" id="messageInput" 
+                   placeholder="Ask me about BMSCE..." onkeypress="handleKeyPress(event)">
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</body>
+
+CSS3
+/* CSS Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Advanced Gradients */
+body {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+}
+
+/* Modern Layout Techniques */
+.chat-container {
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* Flexbox Layout */
+.input-container {
+    display: flex;
+    gap: 15px;
+}
+
+/* CSS3 Animations */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Transition Effects */
+.quick-btn {
+    transition: all 0.3s ease;
+}
+
+.quick-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+JAVASCRIPT
+
+// Data Structure
+const knowledgeBase = {
+    admissions: {
+        keywords: ['admission', 'apply', 'requirements'],
+        response: `🎯 <strong>BMSCE Admissions 2024</strong>...`
+    },
+    // More knowledge base entries...
+};
+
+// Main Logic Functions
+function findResponse(input) {
+    const text = input.toLowerCase();
+    
+    // Pattern matching for greetings
+    const greetings = ['hi', 'hello', 'hey', 'namaste'];
+    if (greetings.some(greeting => text.includes(greeting))) {
+        return "🙏 Hello! Welcome to BMSCE...";
+    }
+    
+    // Knowledge base search
+    for (const [key, data] of Object.entries(knowledgeBase)) {
+        if (data.keywords.some(keyword => text.includes(keyword))) {
+            return data.response;
+        }
+    }
+    
+    return defaultResponse;
+}
+
+function addMessage(message, isUser = false) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    messageDiv.innerHTML = message;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, true);
+    input.value = '';
+
+    showTypingIndicator();
+    setTimeout(() => {
+        hideTypingIndicator();
+        const response = findResponse(message);
+        addMessage(response, false);
+    }, Math.random() * 1000 + 800);
+}
+
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
+// Page load event
+window.addEventListener('load', () => {
+    const messagesDiv = document.getElementById('chatMessages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+
+BACKEND CODE
+
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
+import re
+import random
+import json
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+
+class CollegeChatbot:
+    def __init__(self):
+        self.knowledge_base = {
+            'admissions': {
+                'keywords': ['admission', 'admissions', 'apply', 'application', 'requirements', 
+                           'eligibility', 'entrance', 'exam', 'qualify', 'join', 'enroll'],
+                'responses': [
+                    {
+                        'text': """🎯 **Admission Requirements:**
+• Minimum 75% in Class 12th
+• Valid JEE/NEET/University entrance scores
+• Age limit: 17-25 years
+• Medical fitness certificate
+• Application deadline: March 31st, 2025
+
+📋 **Required Documents:**
+• Class 10th & 12th mark sheets
+• Transfer certificate
+• Caste certificate (if applicable)
+• Income certificate for scholarships""",
+                        'quick_replies': ['Application Process', 'Important Dates', 'Entrance Exams']
+                    },
+                    {
+                        'text': """📋 **Step-by-Step Admission Process:**
+
+1️⃣ **Online Application** (Jan 15 - Mar 31)
+2️⃣ **Entrance Test** (April 10-15)
+3️⃣ **Merit List Publication** (April 25)
+4️⃣ **Counseling Sessions** (May 1-15)
+5️⃣ **Seat Allocation** (May 20)
+6️⃣ **Fee Payment & Confirmation** (May 25)
+7️⃣ **Document Verification** (June 1-5)
+
+💡 **Pro Tip:** Apply early to avoid last-minute rush!""",
+                        'quick_replies': ['Fee Structure', 'Required Documents', 'Contact Admissions']
+                    }
+                ]
+            },
+            'courses': {
+                'keywords': ['course', 'courses', 'program', 'programs', 'degree', 'bachelor', 
+                           'master', 'btech', 'mtech', 'bsc', 'msc', 'study', 'subjects'],
+                'responses': [
+                    {
+                        'text': """📚 **Undergraduate Programs (4 Years):**
+• **B.Tech** - Computer Science, Electronics, Mechanical, Civil, Electrical
+• **B.Sc** - Physics, Chemistry, Mathematics, Computer Science
+• **BBA** - Business Administration with specializations
+• **B.Com** - Commerce and Accounting
+
+🎓 **Postgraduate Programs (2 Years):**
+• **M.Tech** - Various specializations in Engineering
+• **M.Sc** - Applied Sciences and Research
+• **MBA** - Finance, Marketing, HR, Operations
+• **MCA** - Computer Applications""",
+                        'quick_replies': ['Engineering Courses', 'Science Courses', 'Management Courses']
+                    },
+                    {
+                        'text': """⭐ **Popular B.Tech Specializations:**
+
+🖥️ **Computer Science & Engineering:**
+• Software Development, AI/ML, Data Science
+• Placement Rate: 98% | Avg Package: ₹8.5 LPA
+
+⚡ **Electronics & Communication:**
+• VLSI Design, IoT, Embedded Systems
+• Placement Rate: 95% | Avg Package: ₹7.2 LPA
+
+🔧 **Mechanical Engineering:**
+• Automotive, Robotics, Manufacturing
+• Placement Rate: 92% | Avg Package: ₹6.8 LPA
+
+🏗️ **Civil Engineering:**
+• Infrastructure, Construction Management
+• Placement Rate: 90% | Avg Package: ₹5.5 LPA""",
+                        'quick_replies': ['Course Details', 'Curriculum', 'Career Prospects']
+                    }
+                ]
+            },
+            'fees': {
+                'keywords': ['fee', 'fees', 'cost', 'price', 'tuition', 'payment', 'scholarship', 
+                           'financial', 'money', 'expense', 'charges'],
+                'responses': [
+                    {
+                        'text': """💰 **Fee Structure (Per Year):**
+
+🎓 **Engineering (B.Tech):**
+• Tuition Fee: ₹1,20,000
+• Lab Fee: ₹15,000
+• Library Fee: ₹5,000
+• **Total: ₹1,40,000**
+
+🧪 **Sciences (B.Sc):**
+• Tuition Fee: ₹60,000
+• Lab Fee: ₹8,000
+• **Total: ₹68,000**
+
+💼 **Management (MBA):**
+• Tuition Fee: ₹1,80,000
+• Case Study Materials: ₹20,000
+• **Total: ₹2,00,000**
+
+🏠 **Additional Costs:**
+• Hostel: ₹80,000/year
+• Mess: ₹40,000/year""",
+                        'quick_replies': ['Scholarship Info', 'Payment Options', 'Fee Concessions']
+                    },
+                    {
+                        'text': """🎯 **Scholarship Opportunities:**
+
+🏆 **Merit-Based Scholarships:**
+• Top 10 students: 50% fee waiver
+• Top 11-25 students: 25% fee waiver
+• Top 26-50 students: 15% fee waiver
+
+💝 **Need-Based Assistance:**
+• Family income < ₹2 LPA: 75% concession
+• Family income ₹2-5 LPA: 50% concession
+• Family income ₹5-8 LPA: 25% concession
+
+⚽ **Sports Scholarships:**
+• State level players: 40% concession
+• National level players: 60% concession
+
+💳 **Payment Options:**
+• Annual payment: 5% discount
+• Semester-wise payment available
+• EMI through partner banks""",
+                        'quick_replies': ['Apply for Scholarship', 'EMI Details', 'Fee Receipt']
+                    }
+                ]
+            },
+            'facilities': {
+                'keywords': ['facilities', 'facility', 'infrastructure', 'lab', 'laboratory', 
+                           'library', 'hostel', 'canteen', 'sports', 'gym', 'wifi', 'campus'],
+                'responses': [
+                    {
+                        'text': """🏢 **World-Class Infrastructure:**
+
+🔬 **Academic Facilities:**
+• 50+ Modern Laboratories with latest equipment
+• Central Library: 75,000+ books, e-journals
+• 500+ Computer Systems with high-speed internet
+• Smart Classrooms with interactive boards
+• Auditoriums seating 1000+ students
+• Seminar halls and conference rooms
+
+🌐 **Technology Infrastructure:**
+• Campus-wide WiFi (100 Mbps)
+• Digital Learning Management System
+• Online examination portal
+• Virtual labs for remote learning""",
+                        'quick_replies': ['Hostel Info', 'Sports Facilities', 'Labs & Equipment']
+                    },
+                    {
+                        'text': """🏠 **Hostel & Campus Life:**
+
+🛏️ **Accommodation:**
+• Separate Boys & Girls hostels
+• Single/Double/Triple occupancy rooms
+• AC and Non-AC options available
+• 24/7 security with CCTV monitoring
+• Common rooms with TV and games
+• High-speed internet in all rooms
+
+🍽️ **Food & Dining:**
+• Multi-cuisine cafeteria
+• Hygienic mess facilities
+• Separate vegetarian & non-vegetarian counters
+• Late-night snack corners
+• Special diet arrangements
+
+⚽ **Sports & Recreation:**
+• Cricket, Football, Basketball courts
+• Indoor games: Table Tennis, Chess, Carrom
+• Modern gymnasium with latest equipment
+• Swimming pool (Olympic size)
+• Yoga and meditation center""",
+                        'quick_replies': ['Hostel Booking', 'Mess Menu', 'Sports Registration']
+                    }
+                ]
+            },
+            'placements': {
+                'keywords': ['placement', 'placements', 'job', 'career', 'salary', 'package', 
+                           'companies', 'recruit', 'employment', 'internship'],
+                'responses': [
+                    {
+                        'text': """🎯 **Outstanding Placement Record:**
+
+📊 **2024 Placement Statistics:**
+• Overall Placement Rate: 96.5%
+• Average Package: ₹7.8 LPA
+• Highest Package: ₹45 LPA (Microsoft)
+• Top 10% Average: ₹15.2 LPA
+• Companies Visited: 250+
+
+🏢 **Top Recruiters:**
+• **Tech Giants:** Google, Microsoft, Amazon, Adobe
+• **Product Companies:** Flipkart, Zomato, Ola, Paytm
+• **Consulting:** TCS, Infosys, Wipro, Accenture
+• **Core Companies:** L&T, Mahindra, Tata Motors
+• **Startups:** 50+ growing companies""",
+                        'quick_replies': ['Company List', 'Salary Trends', 'Placement Process']
+                    },
+                    {
+                        'text': """💼 **Career Development Support:**
+
+🎯 **Training Programs:**
+• Resume building workshops
+• Mock interviews (technical & HR)
+• Group discussion sessions
+• Aptitude test preparation
+• Soft skills development
+• Industry-specific training
+
+🤝 **Industry Connections:**
+• 500+ industry partnerships
+• Regular guest lectures by industry experts
+• Industrial visits and internships
+• Live project opportunities
+• Mentorship by alumni network
+• Entrepreneurship incubation center
+
+📈 **Internship Program:**
+• Guaranteed internship for all students
+• Summer internships in leading companies
+• Research internships with faculty
+• International internship opportunities""",
+                        'quick_replies': ['Alumni Network', 'Internship Programs', 'Skill Development']
+                    }
+                ]
+            },
+            'campus_life': {
+                'keywords': ['campus', 'life', 'culture', 'events', 'clubs', 'activities', 
+                           'fest', 'student', 'experience', 'fun', 'social'],
+                'responses': [
+                    {
+                        'text': """🎪 **Vibrant Campus Life:**
+
+🎭 **Student Clubs & Societies:**
+• **Technical:** Robotics, Coding, Electronics, Innovation
+• **Cultural:** Dance, Music, Drama, Literature, Art
+• **Sports:** Cricket, Football, Basketball, Swimming
+• **Social Service:** NSS, Blood donation, Environment
+• **Professional:** Entrepreneurship, Marketing, Finance
+
+🎉 **Annual Events:**
+• **TechnoVision** - Technical festival (March)
+• **Kaleidoscope** - Cultural festival (February)
+• **Sports Meet** - Inter-college competitions
+• **Industry Connect** - Corporate networking event""",
+                        'quick_replies': ['Join Clubs', 'Event Calendar', 'Student Activities']
+                    }
+                ]
+            }
+        }
+        
+        # Conversation history
+        self.conversations = {}
+    
+    def preprocess_text(self, text):
+        """Clean and preprocess user input"""
+        # Remove special characters and convert to lowercase
+        text = re.sub(r'[^\w\s]', ' ', text.lower())
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text.strip())
+        return text
+    
+    def calculate_similarity_score(self, user_words, keywords):
+        """Calculate similarity score between user input and keywords"""
+        score = 0
+        for word in user_words:
+            for keyword in keywords:
+                if word in keyword or keyword in word:
+                    score += 1
+                elif len(word) > 3 and len(keyword) > 3:
+                    # Simple fuzzy matching for longer words
+                    if abs(len(word) - len(keyword)) <= 2:
+                        common_chars = set(word) & set(keyword)
+                        if len(common_chars) >= min(len(word), len(keyword)) * 0.6:
+                            score += 0.5
+        return score
+    
+    def get_response(self, user_input, session_id='default'):
+        """Generate response based on user input"""
+        processed_input = self.preprocess_text(user_input)
+        words = processed_input.split()
+        
+        # Handle greetings
+        greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']
+        if any(greeting in processed_input for greeting in greetings):
+            return {
+                'text': """👋 **Welcome to EduBot!**
+
+I'm your AI college assistant, here to help with all your enquiries about:
+• 🎓 Admissions & Requirements
+• 📚 Courses & Programs  
+• 💰 Fees & Scholarships
+• 🏢 Facilities & Infrastructure
+• 💼 Placements & Careers
+• 🎪 Campus Life & Activities
+
+How can I assist you today?""",
+                'quick_replies': ['Admissions', 'Courses', 'Fees', 'Facilities', 'Placements']
+            }
+        
+        # Handle farewells
+        farewells = ['bye', 'goodbye', 'thank you', 'thanks', 'see you', 'take care']
+        if any(farewell in processed_input for farewell in farewells):
+            return {
+                'text': """👋 **Thank you for using EduBot!**
+
+I hope I was able to help you with your college enquiries. Feel free to reach out anytime for more information.
+
+📞 **Contact Information:**
+• Phone: +91-XXX-XXX-XXXX
+• Email: admissions@college.edu
+• Website: www.college.edu
+
+Have a wonderful day! 🌟""",
+                'quick_replies': ['Contact Admissions', 'Visit Website', 'More Questions']
+            }
+        
+        # Find best matching category
+        best_match = None
+        highest_score = 0
+        
+        for category, data in self.knowledge_base.items():
+            score = self.calculate_similarity_score(words, data['keywords'])
+            if score > highest_score:
+                highest_score = score
+                best_match = category
+        
+        # Return response if good match found
+        if best_match and highest_score > 0:
+            responses = self.knowledge_base[best_match]['responses']
+            selected_response = random.choice(responses)
+            return selected_response
+        
+        # Default response for unmatched queries
+        default_responses = [
+            {
+                'text': """🤔 **I'd love to help you with that!**
+
+Could you please be more specific? I can provide detailed information about:
+
+🎯 **Popular Topics:**
+• Admission process and requirements
+• Available courses and programs
+• Fee structure and scholarships
+• Campus facilities and infrastructure
+• Placement statistics and career support
+• Student life and activities
+
+Try asking something like:
+"What are the admission requirements?" or "Tell me about B.Tech courses\"""",
+                'quick_replies': ['Admissions Info', 'Course Details', 'Fee Structure', 'Campus Tour']
+            },
+            {
+                'text': """💡 **I'm here to help with college information!**
+
+You can ask me about:
+• 📋 Application procedures
+• 📚 Academic programs
+• 💰 Costs and financial aid
+• 🏢 Campus facilities
+• 💼 Job placement support
+• 🎉 Student activities
+
+What would you like to know more about?""",
+                'quick_replies': ['Application Process', 'Academic Programs', 'Financial Aid', 'Campus Life']
+            }
+        ]
+        
+        return random.choice(default_responses)
+
+# Initialize chatbot
+chatbot = CollegeChatbot()
+
+@app.route('/')
+def home():
+    """Serve the main chatbot page"""
+    return render_template('chatbot.html')
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    """Handle chat messages"""
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '').strip()
+        session_id = data.get('session_id', 'default')
+        
+        if not user_message:
+            return jsonify({'error': 'Empty message'}), 400
+        
+        # Get bot response
+        response = chatbot.get_response(user_message, session_id)
+        
+        # Log conversation (optional)
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"[{timestamp}] User: {user_message}")
+        print(f"[{timestamp}] Bot: {response['text'][:100]}...")
+        
+        return jsonify({
+            'response': response['text'],
+            'quick_replies': response.get('quick_replies', []),
+            'timestamp': timestamp
+        })
+        
+    except Exception as e:
+        print(f"Error in chat endpoint: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint"""
+    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+
+if __name__ == '__main__':
+    print("🚀 Starting College Chatbot Server...")
+    print("📱 Access the chatbot at: http://localhost:5000")
+    print("🔧 API endpoint: http://localhost:5000/chat")
+    app.run(debug=True, host='0.0.0.0', port=5000)
